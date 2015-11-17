@@ -57,7 +57,7 @@ Gem::Specification.new do |spec|
   spec.description   = %[Embulk filter plugin to convert a input to hash.]
   spec.email         = ["shiketaudonko41@gmail.com"]
   spec.licenses      = ["MIT"]
-  # TODO set this: spec.homepage      = "https://github.com/kamatama41/embulk-filter-hash"
+  spec.homepage      = "https://github.com/kamatama41/embulk-filter-hash"
 
   spec.files         = `git ls-files`.split("\n") + Dir["classpath/*.jar"]
   spec.test_files    = spec.files.grep(%r"^(test|spec)/")
