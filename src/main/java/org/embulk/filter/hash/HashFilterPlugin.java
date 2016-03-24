@@ -2,10 +2,23 @@ package org.embulk.filter.hash;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import org.embulk.config.*;
-import org.embulk.spi.*;
+import org.embulk.config.Config;
+import org.embulk.config.ConfigDefault;
+import org.embulk.config.ConfigSource;
+import org.embulk.config.Task;
+import org.embulk.config.TaskSource;
+import org.embulk.spi.Column;
+import org.embulk.spi.DataException;
+import org.embulk.spi.Exec;
+import org.embulk.spi.FilterPlugin;
+import org.embulk.spi.Page;
+import org.embulk.spi.PageBuilder;
+import org.embulk.spi.PageOutput;
+import org.embulk.spi.PageReader;
+import org.embulk.spi.Schema;
 import org.embulk.spi.time.Timestamp;
 import org.embulk.spi.type.Types;
+import org.msgpack.value.Value;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -103,6 +116,10 @@ public class HashFilterPlugin implements FilterPlugin {
                         final Timestamp value = reader.getTimestamp(inputColumn);
                         inputValue = value;
                         builder.setTimestamp(inputColumn, value);
+                    } else if (Types.JSON.equals(inputColumn.getType())) {
+                        final Value value = reader.getJson(inputColumn);
+                        inputValue = value;
+                        builder.setJson(inputColumn, value);
                     } else {
                         throw new DataException("Unexpected type:" + inputColumn.getType());
                     }
