@@ -18,6 +18,7 @@ import org.embulk.spi.PageReader;
 import org.embulk.spi.Schema;
 import org.embulk.spi.time.Timestamp;
 import org.embulk.spi.type.Types;
+import org.msgpack.value.Value;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -115,6 +116,10 @@ public class HashFilterPlugin implements FilterPlugin {
                         final Timestamp value = reader.getTimestamp(inputColumn);
                         inputValue = value;
                         builder.setTimestamp(inputColumn, value);
+                    } else if (Types.JSON.equals(inputColumn.getType())) {
+                        final Value value = reader.getJson(inputColumn);
+                        inputValue = value;
+                        builder.setJson(inputColumn, value);
                     } else {
                         throw new DataException("Unexpected type:" + inputColumn.getType());
                     }
