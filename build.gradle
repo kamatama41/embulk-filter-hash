@@ -13,11 +13,11 @@ configurations {
     provided
 }
 
-version = "0.1.3"
+version = "0.2.0"
 
 dependencies {
-    compile  "org.embulk:embulk-core:0.8.8"
-    provided "org.embulk:embulk-core:0.8.8"
+    compile  "org.embulk:embulk-core:0.8.16"
+    provided "org.embulk:embulk-core:0.8.16"
     testCompile "com.kamatama41:embulk-test-helpers:0.1.1"
     // Uncomment when using local embulk-test-helpers (and settings.gradle as well)
     //testCompile project(':embulk-test-helpers')
