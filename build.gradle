@@ -7,6 +7,7 @@ import com.github.jrubygradle.JRubyExec
 repositories {
     mavenCentral()
     jcenter()
+    maven { url "http://kamatama41.github.com/embulk-test-helpers/repository" }
 }
 configurations {
     provided
@@ -17,8 +18,9 @@ version = "0.1.3"
 dependencies {
     compile  "org.embulk:embulk-core:0.8.8"
     provided "org.embulk:embulk-core:0.8.8"
-    // compile "YOUR_JAR_DEPENDENCY_GROUP:YOUR_JAR_DEPENDENCY_MODULE:YOUR_JAR_DEPENDENCY_VERSION"
-    testCompile "junit:junit:4.+"
+    testCompile "com.kamatama41:embulk-test-helpers:0.1.1"
+    // Uncomment when using local embulk-test-helpers (and settings.gradle as well)
+    //testCompile project(':embulk-test-helpers')
 }
 
 task classpath(type: Copy, dependsOn: ["jar"]) {

@@ -1,0 +1,8 @@
+type: test
+data:
+- user1,20
+parser:
+  type: csv
+  columns:
+  - {name: username, type: string}
+  - {name: age, type: long}
