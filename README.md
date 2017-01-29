@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/kamatama41/embulk-filter-hash.svg?branch=master)](https://travis-ci.org/kamatama41/embulk-filter-hash)
+
 # Hash filter plugin for Embulk
 
 Embulk filter plugin to convert a input to hash.

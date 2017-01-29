@@ -1,0 +1,3 @@
+// Uncomment when using local embulk-test-helpers (and build.gradle as well)
+//include ':embulk-test-helpers'
+//project(':embulk-test-helpers').projectDir = new File(settingsDir, '../embulk-test-helpers')

@@ -1,0 +1,13 @@
+type: test
+data:
+- >-
+ user1,21,65.4,true,2016-03-27 01:23:45,{"a":{"b":"c"}}"
+parser:
+  type: csv
+  columns:
+  - {name: username,   type: string}
+  - {name: age,        type: long}
+  - {name: weight,     type: double}
+  - {name: active,     type: boolean}
+  - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S'}
+  - {name: options,    type: json}
