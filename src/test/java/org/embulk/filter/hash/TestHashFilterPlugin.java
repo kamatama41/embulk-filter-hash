@@ -2,8 +2,8 @@ package org.embulk.filter.hash;
 
 import org.embulk.config.ConfigSource;
 import org.embulk.spi.FilterPlugin;
-import org.embulk.test.ExtendedTestingEmbulk;
-import org.junit.Rule;
+import org.embulk.test.EmbulkPluginTest;
+import org.embulk.test.TestingEmbulk;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -15,25 +15,25 @@ import static org.embulk.test.TestOutputPlugin.assertSchema;
 import static org.embulk.test.Utils.column;
 import static org.embulk.test.Utils.record;
 
-public class TestHashFilterPlugin {
-    @Rule
-    public ExtendedTestingEmbulk embulk = (ExtendedTestingEmbulk) ExtendedTestingEmbulk
-            .builder()
-            .registerPlugin(FilterPlugin.class, "hash", HashFilterPlugin.class)
-            .build();
+public class TestHashFilterPlugin extends EmbulkPluginTest {
+
+    @Override
+    protected void setup(TestingEmbulk.Builder builder) {
+        builder.registerPlugin(FilterPlugin.class, "hash", HashFilterPlugin.class);
+    }
 
     @Test
     public void specifiedColumnIsHashedAndRenamed() {
         final String inConfigPath = "yaml/input_basic.yml";
 
-        ConfigSource config = embulk.newConfig()
+        ConfigSource config = newConfig()
                 .set("type", "hash")
                 .set("columns", Collections.singletonList(
-                        config().set("name", "age").set("algorithm", "MD5").set("new_name", "hashed_age")
+                        newConfig().set("name", "age").set("algorithm", "MD5").set("new_name", "hashed_age")
                         )
                 );
 
-        embulk.runFilter(config, inConfigPath);
+        runFilter(config, inConfigPath);
 
         assertSchema(
                 column("username", STRING),
@@ -49,19 +49,19 @@ public class TestHashFilterPlugin {
     public void allColumnTypesAreHashed() {
         final String inConfigPath = "yaml/input_column_types.yml";
 
-        ConfigSource config = embulk.newConfig()
+        ConfigSource config = newConfig()
                 .set("type", "hash")
                 .set("columns", Arrays.asList(
-                        config().set("name", "username"),
-                        config().set("name", "age"),
-                        config().set("name", "weight"),
-                        config().set("name", "active"),
-                        config().set("name", "created_at"),
-                        config().set("name", "options")
+                        newConfig().set("name", "username"),
+                        newConfig().set("name", "age"),
+                        newConfig().set("name", "weight"),
+                        newConfig().set("name", "active"),
+                        newConfig().set("name", "created_at"),
+                        newConfig().set("name", "options")
                         )
                 );
 
-        embulk.runFilter(config, inConfigPath);
+        runFilter(config, inConfigPath);
 
         assertSchema(
                 column("username", STRING),
@@ -82,9 +82,5 @@ public class TestHashFilterPlugin {
                         "3ff0e331ca59a2a1194bac0e36359ed4540a97383e1cdf6eb95c7de9309143fc"
                 )
         );
-    }
-
-    private ConfigSource config() {
-        return embulk.newConfig();
     }
 }
