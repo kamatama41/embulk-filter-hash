@@ -83,4 +83,23 @@ public class TestHashFilterPlugin extends EmbulkPluginTest {
                 )
         );
     }
+
+    @Test
+    public void columnIsNull() {
+        final String inConfigPath = "yaml/input_null_column.yml";
+
+        ConfigSource config = newConfig()
+                .set("type", "hash")
+                .set("columns", Arrays.asList(
+                        newConfig().set("name", "username"),
+                        newConfig().set("name", "age")
+                        )
+                );
+
+        runFilter(config, inConfigPath);
+
+        assertRecords(
+                record(null, "f5ca38f748a1d6eaf726b8a42fb575c3c71f1864a8143301782de13da2d9202b")
+        );
+    }
 }
