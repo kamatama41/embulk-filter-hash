@@ -1,7 +1,6 @@
 package org.embulk.filter.hash
 
 import com.google.common.base.Optional
-import com.google.common.base.Throwables
 import org.embulk.config.Config
 import org.embulk.config.ConfigDefault
 import org.embulk.config.ConfigSource
@@ -18,8 +17,6 @@ import org.embulk.spi.PageReader
 import org.embulk.spi.Schema
 import org.embulk.spi.type.Types
 import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
-import java.util.HashMap
 
 class HashFilterPlugin : FilterPlugin {
 
@@ -47,12 +44,10 @@ class HashFilterPlugin : FilterPlugin {
         val hashColumnMap = convertHashColumnListToMap(task.getColumns())
 
         val builder = Schema.builder()
-        for (column in inputSchema.columns) {
-
-            val hashColumn = hashColumnMap.get(column.name)
-
+        inputSchema.columns.forEach { column ->
+            val hashColumn = hashColumnMap[column.name]
             if (hashColumn != null) {
-                builder.add(hashColumn!!.getNewName().or(column.name), Types.STRING)
+                builder.add(hashColumn.getNewName().or(column.name), Types.STRING)
             } else {
                 builder.add(column.name, column.type)
             }
@@ -87,38 +82,31 @@ class HashFilterPlugin : FilterPlugin {
                     }
 
                     // Write the original data
-                    val inputValue: Any
-                    if (Types.STRING == inputColumn.type) {
-                        val value = reader.getString(inputColumn)
-                        inputValue = value
-                        builder.setString(inputColumn, value)
-                    } else if (Types.BOOLEAN == inputColumn.type) {
-                        val value = reader.getBoolean(inputColumn)
-                        inputValue = value
-                        builder.setBoolean(inputColumn, value)
-                    } else if (Types.DOUBLE == inputColumn.type) {
-                        val value = reader.getDouble(inputColumn)
-                        inputValue = value
-                        builder.setDouble(inputColumn, value)
-                    } else if (Types.LONG == inputColumn.type) {
-                        val value = reader.getLong(inputColumn)
-                        inputValue = value
-                        builder.setLong(inputColumn, value)
-                    } else if (Types.TIMESTAMP == inputColumn.type) {
-                        val value = reader.getTimestamp(inputColumn)
-                        inputValue = value
-                        builder.setTimestamp(inputColumn, value)
-                    } else if (Types.JSON == inputColumn.type) {
-                        val value = reader.getJson(inputColumn)
-                        inputValue = value
-                        builder.setJson(inputColumn, value)
-                    } else {
-                        throw DataException("Unexpected type:" + inputColumn.type)
+                    val inputValue : Any = when (inputColumn.type) {
+                        Types.STRING -> {
+                            reader.getString(inputColumn).apply { builder.setString(inputColumn, this) }
+                        }
+                        Types.BOOLEAN -> {
+                            reader.getBoolean(inputColumn).apply { builder.setBoolean(inputColumn, this) }
+                        }
+                        Types.DOUBLE -> {
+                            reader.getDouble(inputColumn).apply { builder.setDouble(inputColumn, this) }
+                        }
+                        Types.LONG -> {
+                            reader.getLong(inputColumn).apply { builder.setLong(inputColumn, this) }
+                        }
+                        Types.TIMESTAMP -> {
+                            reader.getTimestamp(inputColumn).apply { builder.setTimestamp(inputColumn, this) }
+                        }
+                        Types.JSON -> {
+                            reader.getJson(inputColumn).apply { builder.setJson(inputColumn, this) }
+                        } else -> {
+                            throw DataException("Unexpected type:" + inputColumn.type)
+                        }
                     }
 
                     // Overwrite the column if it's hash column.
-                    val hashColumn = hashColumnMap[inputColumn.name]
-                    if (hashColumn != null) {
+                    hashColumnMap[inputColumn.name]?.let { hashColumn ->
                         val outputColumn = outputColumnMap[hashColumn.getNewName().or(inputColumn.name)]
                         val hashedValue = generateHash(inputValue.toString(), hashColumn.getAlgorithm().get())
                         builder.setString(outputColumn, hashedValue)
@@ -127,21 +115,9 @@ class HashFilterPlugin : FilterPlugin {
             }
 
             private fun generateHash(value: String, algorithm: String): String {
-                var result: String? = null
-                try {
-                    val md = MessageDigest.getInstance(algorithm)
-                    md.update(value.toByteArray())
-
-                    val sb = StringBuilder()
-                    for (b in md.digest()) {
-                        sb.append(String.format("%02x", b))
-                    }
-                    result = sb.toString()
-                } catch (e: NoSuchAlgorithmException) {
-                    Throwables.propagate(e)
-                }
-
-                return result!!
+                val md = MessageDigest.getInstance(algorithm)
+                md.update(value.toByteArray())
+                return md.digest().joinToString("") { "%02x".format(it) }
             }
 
             override fun finish() {
@@ -154,19 +130,11 @@ class HashFilterPlugin : FilterPlugin {
         }
     }
 
-    private fun convertHashColumnListToMap(hashColumns: List<HashColumn>): Map<String, HashColumn> {
-        val result = HashMap<String, HashColumn>()
-        for (hashColumn in hashColumns) {
-            result.put(hashColumn.getName(), hashColumn)
-        }
-        return result
+    private fun convertHashColumnListToMap(hashColumns: List<HashColumn>?): Map<String, HashColumn> {
+        return hashColumns!!.associate { Pair(it.getName(), it) }
     }
 
-    private fun convertColumnListToMap(columns: List<Column>): Map<String, Column> {
-        val result = HashMap<String, Column>()
-        for (column in columns) {
-            result.put(column.name, column)
-        }
-        return result
+    private fun convertColumnListToMap(columns: List<Column>?): Map<String, Column> {
+        return columns!!.associate { Pair(it.name, it) }
     }
 }
