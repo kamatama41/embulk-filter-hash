@@ -1,55 +1,50 @@
-package org.embulk.filter.hash;
+package org.embulk.filter.hash
 
-import org.embulk.config.ConfigSource;
-import org.embulk.spi.FilterPlugin;
-import org.embulk.test.EmbulkPluginTest;
-import org.embulk.test.TestingEmbulk;
-import org.junit.Test;
+import org.embulk.config.ConfigSource
+import org.embulk.spi.FilterPlugin
+import org.embulk.test.EmbulkPluginTest
+import org.embulk.test.TestingEmbulk
+import org.junit.Test
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.Arrays
+import java.util.Collections
 
-import static org.embulk.spi.type.Types.STRING;
-import static org.embulk.test.TestOutputPlugin.assertRecords;
-import static org.embulk.test.TestOutputPlugin.assertSchema;
-import static org.embulk.test.Utils.column;
-import static org.embulk.test.Utils.record;
+import org.embulk.spi.type.Types.STRING
+import org.embulk.test.TestOutputPlugin.assertRecords
+import org.embulk.test.TestOutputPlugin.assertSchema
+import org.embulk.test.Utils.column
+import org.embulk.test.Utils.record
 
-public class TestHashFilterPlugin extends EmbulkPluginTest {
+class TestHashFilterPlugin : EmbulkPluginTest() {
 
-    @Override
-    protected void setup(TestingEmbulk.Builder builder) {
-        builder.registerPlugin(FilterPlugin.class, "hash", HashFilterPlugin.class);
+    override fun setup(builder: TestingEmbulk.Builder?) {
+        builder!!.registerPlugin(FilterPlugin::class.java, "hash", HashFilterPlugin::class.java)
     }
 
-    @Test
-    public void specifiedColumnIsHashedAndRenamed() {
-        final String inConfigPath = "yaml/input_basic.yml";
+    @Test fun specifiedColumnIsHashedAndRenamed() {
+        val inConfigPath = "yaml/input_basic.yml"
 
-        ConfigSource config = newConfig()
+        val config = newConfig()
                 .set("type", "hash")
-                .set("columns", Collections.singletonList(
-                        newConfig().set("name", "age").set("algorithm", "MD5").set("new_name", "hashed_age")
-                        )
-                );
+                .set("columns", listOf(newConfig().set("name", "age").set("algorithm", "MD5").set("new_name", "hashed_age"))
+                )
 
-        runFilter(config, inConfigPath);
+        runFilter(config, inConfigPath)
 
         assertSchema(
                 column("username", STRING),
                 column("hashed_age", STRING)
-        );
+        )
 
         assertRecords(
                 record("user1", "98f13708210194c475687be6106a3b84")
-        );
+        )
     }
 
-    @Test
-    public void allColumnTypesAreHashed() {
-        final String inConfigPath = "yaml/input_column_types.yml";
+    @Test fun allColumnTypesAreHashed() {
+        val inConfigPath = "yaml/input_column_types.yml"
 
-        ConfigSource config = newConfig()
+        val config = newConfig()
                 .set("type", "hash")
                 .set("columns", Arrays.asList(
                         newConfig().set("name", "username"),
@@ -58,10 +53,10 @@ public class TestHashFilterPlugin extends EmbulkPluginTest {
                         newConfig().set("name", "active"),
                         newConfig().set("name", "created_at"),
                         newConfig().set("name", "options")
-                        )
-                );
+                )
+                )
 
-        runFilter(config, inConfigPath);
+        runFilter(config, inConfigPath)
 
         assertSchema(
                 column("username", STRING),
@@ -70,7 +65,7 @@ public class TestHashFilterPlugin extends EmbulkPluginTest {
                 column("active", STRING),
                 column("created_at", STRING),
                 column("options", STRING)
-        );
+        )
 
         assertRecords(
                 record(
@@ -81,25 +76,24 @@ public class TestHashFilterPlugin extends EmbulkPluginTest {
                         "9673fe7b67d880e2c9071428c63f6e1bea9dde98283297277a20b92ea0acdc72",
                         "3ff0e331ca59a2a1194bac0e36359ed4540a97383e1cdf6eb95c7de9309143fc"
                 )
-        );
+        )
     }
 
-    @Test
-    public void columnIsNull() {
-        final String inConfigPath = "yaml/input_null_column.yml";
+    @Test fun columnIsNull() {
+        val inConfigPath = "yaml/input_null_column.yml"
 
-        ConfigSource config = newConfig()
+        val config = newConfig()
                 .set("type", "hash")
                 .set("columns", Arrays.asList(
                         newConfig().set("name", "username"),
                         newConfig().set("name", "age")
-                        )
-                );
+                )
+                )
 
-        runFilter(config, inConfigPath);
+        runFilter(config, inConfigPath)
 
         assertRecords(
                 record(null, "f5ca38f748a1d6eaf726b8a42fb575c3c71f1864a8143301782de13da2d9202b")
-        );
+        )
     }
 }
