@@ -1,13 +1,9 @@
 package org.embulk.filter.hash
 
-import org.embulk.config.ConfigSource
 import org.embulk.spi.FilterPlugin
 import org.embulk.test.EmbulkPluginTest
 import org.embulk.test.TestingEmbulk
 import org.junit.Test
-
-import java.util.Arrays
-import java.util.Collections
 
 import org.embulk.spi.type.Types.STRING
 import org.embulk.test.TestOutputPlugin.assertRecords
@@ -17,8 +13,8 @@ import org.embulk.test.Utils.record
 
 class TestHashFilterPlugin : EmbulkPluginTest() {
 
-    override fun setup(builder: TestingEmbulk.Builder?) {
-        builder!!.registerPlugin(FilterPlugin::class.java, "hash", HashFilterPlugin::class.java)
+    override fun setup(builder: TestingEmbulk.Builder) {
+        builder.registerPlugin(FilterPlugin::class.java, "hash", HashFilterPlugin::class.java)
     }
 
     @Test fun specifiedColumnIsHashedAndRenamed() {
@@ -26,8 +22,11 @@ class TestHashFilterPlugin : EmbulkPluginTest() {
 
         val config = newConfig()
                 .set("type", "hash")
-                .set("columns", listOf(newConfig().set("name", "age").set("algorithm", "MD5").set("new_name", "hashed_age"))
-                )
+                .set("columns", listOf(newConfig()
+                        .set("name", "age")
+                        .set("algorithm", "MD5")
+                        .set("new_name", "hashed_age")
+                ))
 
         runFilter(config, inConfigPath)
 
@@ -46,15 +45,14 @@ class TestHashFilterPlugin : EmbulkPluginTest() {
 
         val config = newConfig()
                 .set("type", "hash")
-                .set("columns", Arrays.asList(
+                .set("columns", listOf(
                         newConfig().set("name", "username"),
                         newConfig().set("name", "age"),
                         newConfig().set("name", "weight"),
                         newConfig().set("name", "active"),
                         newConfig().set("name", "created_at"),
                         newConfig().set("name", "options")
-                )
-                )
+                ))
 
         runFilter(config, inConfigPath)
 
@@ -84,11 +82,10 @@ class TestHashFilterPlugin : EmbulkPluginTest() {
 
         val config = newConfig()
                 .set("type", "hash")
-                .set("columns", Arrays.asList(
+                .set("columns", listOf(
                         newConfig().set("name", "username"),
                         newConfig().set("name", "age")
-                )
-                )
+                ))
 
         runFilter(config, inConfigPath)
 
