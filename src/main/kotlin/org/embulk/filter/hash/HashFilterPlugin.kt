@@ -82,7 +82,7 @@ class HashFilterPlugin : FilterPlugin {
                     }
 
                     // Write the original data
-                    val inputValue : Any = when (inputColumn.type) {
+                    val inputValue: Any = when (inputColumn.type) {
                         Types.STRING -> {
                             reader.getString(inputColumn).apply { builder.setString(inputColumn, this) }
                         }
@@ -100,7 +100,8 @@ class HashFilterPlugin : FilterPlugin {
                         }
                         Types.JSON -> {
                             reader.getJson(inputColumn).apply { builder.setJson(inputColumn, this) }
-                        } else -> {
+                        }
+                        else -> {
                             throw DataException("Unexpected type:" + inputColumn.type)
                         }
                     }
