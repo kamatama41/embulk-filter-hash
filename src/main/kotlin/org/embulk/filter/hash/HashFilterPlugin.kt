@@ -40,7 +40,7 @@ class HashFilterPlugin : FilterPlugin {
 
     override fun transaction(config: ConfigSource, inputSchema: Schema, control: FilterPlugin.Control) {
 
-        val task = config.loadConfig(PluginTask::class.java)
+        val task: PluginTask = config.loadConfig()
         val hashColumnMap = convertHashColumnListToMap(task.columns)
 
         val builder = Schema.builder()
@@ -58,7 +58,7 @@ class HashFilterPlugin : FilterPlugin {
     override fun open(taskSource: TaskSource, inputSchema: Schema,
                       outputSchema: Schema, output: PageOutput): PageOutput {
 
-        val task = taskSource.loadTask(PluginTask::class.java)
+        val task: PluginTask = taskSource.loadTask()
         val hashColumnMap = convertHashColumnListToMap(task.columns)
         val outputColumnMap = convertColumnListToMap(outputSchema.columns)
 
