@@ -20,12 +20,13 @@ repositories {
     mavenCentral()
     jcenter()
     maven { url "http://kamatama41.github.com/embulk-test-helpers/repository" }
+    maven { url 'https://raw.github.com/kamatama41/embulk-test-helpers/snapshot/repository' }
 }
 configurations {
     provided
 }
 
-version = "0.3.0"
+version = "0.3.1"
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
@@ -33,9 +34,7 @@ dependencies {
     compile  "org.embulk:embulk-core:0.8.16"
     provided "org.embulk:embulk-core:0.8.16"
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    testCompile "com.kamatama41:embulk-test-helpers:0.1.3"
-    // Uncomment when using local embulk-test-helpers (and settings.gradle as well)
-    //testCompile project(':embulk-test-helpers')
+    testCompile "com.kamatama41:embulk-test-helpers:0.2.4"
 }
 
 task classpath(type: Copy, dependsOn: ["jar"]) {

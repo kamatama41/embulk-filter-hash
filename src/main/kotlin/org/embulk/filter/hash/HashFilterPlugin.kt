@@ -21,33 +21,33 @@ import java.security.MessageDigest
 class HashFilterPlugin : FilterPlugin {
 
     interface PluginTask : Task {
-        @Config("columns")
-        fun getColumns(): List<HashColumn>
+        @get:Config("columns")
+        val columns: List<HashColumn>
     }
 
     interface HashColumn : Task {
-        @Config("name")
-        fun getName(): String
+        @get:Config("name")
+        val name: String
 
-        @Config("algorithm")
-        @ConfigDefault("\"SHA-256\"")
-        fun getAlgorithm(): Optional<String>
+        @get:Config("algorithm")
+        @get:ConfigDefault("\"SHA-256\"")
+        val algorithm: Optional<String>
 
-        @Config("new_name")
-        @ConfigDefault("null")
-        fun getNewName(): Optional<String>
+        @get:Config("new_name")
+        @get:ConfigDefault("null")
+        val newName: Optional<String>
     }
 
     override fun transaction(config: ConfigSource, inputSchema: Schema, control: FilterPlugin.Control) {
 
-        val task = config.loadConfig(PluginTask::class.java)
-        val hashColumnMap = convertHashColumnListToMap(task.getColumns())
+        val task: PluginTask = config.loadConfig()
+        val hashColumnMap = convertHashColumnListToMap(task.columns)
 
         val builder = Schema.builder()
         inputSchema.columns.forEach { column ->
             val hashColumn = hashColumnMap[column.name]
             if (hashColumn != null) {
-                builder.add(hashColumn.getNewName().or(column.name), Types.STRING)
+                builder.add(hashColumn.newName.or(column.name), Types.STRING)
             } else {
                 builder.add(column.name, column.type)
             }
@@ -58,8 +58,8 @@ class HashFilterPlugin : FilterPlugin {
     override fun open(taskSource: TaskSource, inputSchema: Schema,
                       outputSchema: Schema, output: PageOutput): PageOutput {
 
-        val task = taskSource.loadTask(PluginTask::class.java)
-        val hashColumnMap = convertHashColumnListToMap(task.getColumns())
+        val task: PluginTask = taskSource.loadTask()
+        val hashColumnMap = convertHashColumnListToMap(task.columns)
         val outputColumnMap = convertColumnListToMap(outputSchema.columns)
 
         return object : PageOutput {
@@ -82,7 +82,7 @@ class HashFilterPlugin : FilterPlugin {
                     }
 
                     // Write the original data
-                    val inputValue : Any = when (inputColumn.type) {
+                    val inputValue: Any = when (inputColumn.type) {
                         Types.STRING -> {
                             reader.getString(inputColumn).apply { builder.setString(inputColumn, this) }
                         }
@@ -100,15 +100,16 @@ class HashFilterPlugin : FilterPlugin {
                         }
                         Types.JSON -> {
                             reader.getJson(inputColumn).apply { builder.setJson(inputColumn, this) }
-                        } else -> {
+                        }
+                        else -> {
                             throw DataException("Unexpected type:" + inputColumn.type)
                         }
                     }
 
                     // Overwrite the column if it's hash column.
                     hashColumnMap[inputColumn.name]?.let { hashColumn ->
-                        val outputColumn = outputColumnMap[hashColumn.getNewName().or(inputColumn.name)]
-                        val hashedValue = generateHash(inputValue.toString(), hashColumn.getAlgorithm().get())
+                        val outputColumn = outputColumnMap[hashColumn.newName.or(inputColumn.name)]
+                        val hashedValue = generateHash(inputValue.toString(), hashColumn.algorithm.get())
                         builder.setString(outputColumn, hashedValue)
                     }
                 }
@@ -131,7 +132,7 @@ class HashFilterPlugin : FilterPlugin {
     }
 
     private fun convertHashColumnListToMap(hashColumns: List<HashColumn>?): Map<String, HashColumn> {
-        return hashColumns!!.associate { Pair(it.getName(), it) }
+        return hashColumns!!.associate { Pair(it.name, it) }
     }
 
     private fun convertColumnListToMap(columns: List<Column>?): Map<String, Column> {
