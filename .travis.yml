@@ -6,4 +6,5 @@ jdk:
   - oraclejdk8
 
 script:
+  - ./gradlew checkstyle
   - ./gradlew --info check

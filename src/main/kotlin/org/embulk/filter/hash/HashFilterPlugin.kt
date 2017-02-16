@@ -19,7 +19,6 @@ import org.embulk.spi.type.Types
 import java.security.MessageDigest
 
 class HashFilterPlugin : FilterPlugin {
-
     interface PluginTask : Task {
         @get:Config("columns")
         val columns: List<HashColumn>
@@ -39,7 +38,6 @@ class HashFilterPlugin : FilterPlugin {
     }
 
     override fun transaction(config: ConfigSource, inputSchema: Schema, control: FilterPlugin.Control) {
-
         val task: PluginTask = config.loadConfig()
         val hashColumnMap = convertHashColumnListToMap(task.columns)
 
@@ -57,7 +55,6 @@ class HashFilterPlugin : FilterPlugin {
 
     override fun open(taskSource: TaskSource, inputSchema: Schema,
                       outputSchema: Schema, output: PageOutput): PageOutput {
-
         val task: PluginTask = taskSource.loadTask()
         val hashColumnMap = convertHashColumnListToMap(task.columns)
         val outputColumnMap = convertColumnListToMap(outputSchema.columns)
