@@ -12,7 +12,6 @@ import org.embulk.test.set
 import org.junit.Before
 
 class TestHashFilterPlugin : EmbulkPluginTest() {
-
     @Before fun setup() {
         builder.registerPlugins(HashFilterPlugin::class)
     }
