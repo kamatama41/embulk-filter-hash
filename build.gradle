@@ -1,30 +1,23 @@
 buildscript {
-    ext.kotlin_version = '1.0.6'
+    ext.kotlin_version = '1.1.0'
     repositories {
         mavenCentral()
+        jcenter()
+        maven { url 'http://kamatama41.github.com/maven-repository/repository' }
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.github.kamatama41:gradle-embulk-plugin:0.1.1"
     }
 }
 
-plugins {
-    id "com.jfrog.bintray" version "1.1"
-    id "com.github.jruby-gradle.base" version "0.1.5"
-    id "java"
-    id "checkstyle"
-}
 apply plugin: "kotlin"
+apply plugin: "com.github.kamatama41.embulk"
 
-import com.github.jrubygradle.JRubyExec
 repositories {
     mavenCentral()
     jcenter()
-    maven { url "http://kamatama41.github.com/embulk-test-helpers/repository" }
-    maven { url 'https://raw.github.com/kamatama41/embulk-test-helpers/snapshot/repository' }
-}
-configurations {
-    provided
+    maven { url 'http://kamatama41.github.com/maven-repository/repository' }
 }
 
 version = "0.3.1"
@@ -32,78 +25,13 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 dependencies {
-    compile  "org.embulk:embulk-core:0.8.16"
-    provided "org.embulk:embulk-core:0.8.16"
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    testCompile "com.kamatama41:embulk-test-helpers:0.2.4"
+    testCompile "com.github.kamatama41:embulk-test-helpers:0.3.2"
 }
 
-task classpath(type: Copy, dependsOn: ["jar"]) {
-    doFirst { file("classpath").deleteDir() }
-    from (configurations.runtime - configurations.provided + files(jar.archivePath))
-    into "classpath"
+embulk {
+    embulkVersion = "0.8.18"
+    category = "filter"
+    name = "hash"
+    homepage = "https://github.com/kamatama41/embulk-filter-hash"
 }
-clean { delete "classpath" }
-
-checkstyle {
-    configFile = file("${project.rootDir}/config/checkstyle/checkstyle.xml")
-    toolVersion = '6.14.1'
-}
-checkstyleMain {
-    configFile = file("${project.rootDir}/config/checkstyle/default.xml")
-    ignoreFailures = true
-}
-checkstyleTest {
-    configFile = file("${project.rootDir}/config/checkstyle/default.xml")
-    ignoreFailures = true
-}
-task checkstyle(type: Checkstyle) {
-    classpath = sourceSets.main.output + sourceSets.test.output
-    source = sourceSets.main.allSource + sourceSets.test.allSource
-}
-
-task gem(type: JRubyExec, dependsOn: ["gemspec", "classpath"]) {
-    jrubyArgs "-rrubygems/gem_runner", "-eGem::GemRunner.new.run(ARGV)", "build"
-    script "${project.name}.gemspec"
-    doLast { ant.move(file: "${project.name}-${project.version}.gem", todir: "pkg") }
-}
-
-task gemPush(type: JRubyExec, dependsOn: ["gem"]) {
-    jrubyArgs "-rrubygems/gem_runner", "-eGem::GemRunner.new.run(ARGV)", "push"
-    script "pkg/${project.name}-${project.version}.gem"
-}
-
-task "package"(dependsOn: ["gemspec", "classpath"]) {
-    doLast {
-        println "> Build succeeded."
-        println "> You can run embulk with '-L ${file(".").absolutePath}' argument."
-    }
-}
-
-task gemspec {
-    ext.gemspecFile = file("${project.name}.gemspec")
-    inputs.file "build.gradle"
-    outputs.file gemspecFile
-    doLast { gemspecFile.write($/
-Gem::Specification.new do |spec|
-  spec.name          = "${project.name}"
-  spec.version       = "${project.version}"
-  spec.authors       = ["Shinichi Ishimura"]
-  spec.summary       = %[Hash filter plugin for Embulk]
-  spec.description   = %[Embulk filter plugin to convert a input to hash.]
-  spec.email         = ["shiketaudonko41@gmail.com"]
-  spec.licenses      = ["MIT"]
-  spec.homepage      = "https://github.com/kamatama41/embulk-filter-hash"
-
-  spec.files         = `git ls-files`.split("\n") + Dir["classpath/*.jar"]
-  spec.test_files    = spec.files.grep(%r"^(test|spec)/")
-  spec.require_paths = ["lib"]
-
-  #spec.add_dependency 'YOUR_GEM_DEPENDENCY', ['~> YOUR_GEM_DEPENDENCY_VERSION']
-  spec.add_development_dependency 'bundler', ['~> 1.0']
-  spec.add_development_dependency 'rake', ['>= 10.0']
-end
-/$)
-    }
-}
-clean { delete "${project.name}.gemspec" }
