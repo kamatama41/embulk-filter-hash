@@ -20,7 +20,7 @@ repositories {
     maven { url 'http://kamatama41.github.com/maven-repository/repository' }
 }
 
-version = "0.3.1"
+version = "0.3.2"
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
