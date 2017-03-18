@@ -1,13 +1,13 @@
 buildscript {
-    ext.kotlin_version = '1.1.0'
+    ext.kotlinVersion = '1.1.1'
     repositories {
         mavenCentral()
         jcenter()
         maven { url 'http://kamatama41.github.com/maven-repository/repository' }
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "com.github.kamatama41:gradle-embulk-plugin:0.1.1"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "com.github.kamatama41:gradle-embulk-plugin:0.1.2"
     }
 }
 
@@ -25,12 +25,12 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     testCompile "com.github.kamatama41:embulk-test-helpers:0.3.2"
 }
 
 embulk {
-    embulkVersion = "0.8.18"
+    version = "0.8.18"
     category = "filter"
     name = "hash"
     homepage = "https://github.com/kamatama41/embulk-filter-hash"
