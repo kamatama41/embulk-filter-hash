@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/kamatama41/embulk-filter-hash.svg?branch=master)](https://travis-ci.org/kamatama41/embulk-filter-hash)
+[![CircleCI](https://circleci.com/gh/kamatama41/embulk-filter-hash.svg?style=svg)](https://circleci.com/gh/kamatama41/embulk-filter-hash)
 
 # Hash filter plugin for Embulk
 
