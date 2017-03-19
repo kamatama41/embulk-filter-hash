@@ -7,7 +7,7 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "com.github.kamatama41:gradle-embulk-plugin:0.1.2"
+        classpath "com.github.kamatama41:gradle-embulk-plugin:0.1.4"
     }
 }
 
@@ -33,5 +33,9 @@ embulk {
     version = "0.8.18"
     category = "filter"
     name = "hash"
+    authors = ["Shinichi Ishimura"]
+    email = "shiketaudonko41@gmail.com"
+    description = "Embulk filter plugin to convert a input to hash."
+    licenses = ["MIT"]
     homepage = "https://github.com/kamatama41/embulk-filter-hash"
 }
