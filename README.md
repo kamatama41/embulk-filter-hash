@@ -27,6 +27,7 @@ filters:
 
 ## Hash Algorithm
 <a name ="hash_algorithm">
+
 This plugin uses [MessageDigest](https://docs.oracle.com/javase/7/docs/api/java/security/MessageDigest.html) for hashing.
 Every implementation of the Java platform supports the following MessageDigest algorithms:  
 - MD5
