@@ -1,0 +1,14 @@
+// ref: https://docs.gradle.org/3.5/userguide/plugins.html#sec:plugin_management
+pluginManagement {
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.namespace == 'com.github.kamatama41') {
+                useModule("com.github.kamatama41:gradle-${requested.id.name}-plugin:${requested.version}")
+            }
+        }
+    }
+    repositories {
+        maven { url 'http://kamatama41.github.com/maven-repository/repository' }
+        gradlePluginPortal()
+    }
+}
