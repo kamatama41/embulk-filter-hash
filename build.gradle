@@ -36,7 +36,7 @@ embulk {
     name = "hash"
     authors = ["Shinichi Ishimura"]
     email = "shiketaudonko41@gmail.com"
-    description = "Embulk filter plugin to convert a input to hash."
+    description = "Embulk filter plugin to convert an input to a hash value."
     licenses = ["MIT"]
     homepage = "https://github.com/kamatama41/embulk-filter-hash"
 }
