@@ -2,7 +2,7 @@
 
 # Hash filter plugin for Embulk
 
-Embulk filter plugin to convert a input to hash.
+Embulk filter plugin to convert an input to a hash value.
 
 ## Overview
 
