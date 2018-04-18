@@ -22,16 +22,16 @@ repositories {
     maven { url 'http://kamatama41.github.com/maven-repository/repository' }
 }
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    testCompile "com.github.kamatama41:embulk-test-helpers:0.3.2"
+    testCompile "com.github.kamatama41:embulk-test-helpers:0.4.0"
 }
 
 embulk {
-    version = "0.8.18"
+    version = "0.9.7"
     category = "filter"
     name = "hash"
     authors = ["Shinichi Ishimura"]
