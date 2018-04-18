@@ -78,37 +78,47 @@ class HashFilterPlugin : FilterPlugin {
                         continue
                     }
 
-                    // Write the original data
-                    val inputValue: Any = when (inputColumn.type) {
+                    when (inputColumn.type) {
                         Types.STRING -> {
-                            reader.getString(inputColumn).apply { builder.setString(inputColumn, this) }
+                            setColumnValue(inputColumn, reader::getString, builder::setString)
                         }
                         Types.BOOLEAN -> {
-                            reader.getBoolean(inputColumn).apply { builder.setBoolean(inputColumn, this) }
+                            setColumnValue(inputColumn, reader::getBoolean, builder::setBoolean)
                         }
                         Types.DOUBLE -> {
-                            reader.getDouble(inputColumn).apply { builder.setDouble(inputColumn, this) }
+                            setColumnValue(inputColumn, reader::getDouble, builder::setDouble)
                         }
                         Types.LONG -> {
-                            reader.getLong(inputColumn).apply { builder.setLong(inputColumn, this) }
+                            setColumnValue(inputColumn, reader::getLong, builder::setLong)
                         }
                         Types.TIMESTAMP -> {
-                            reader.getTimestamp(inputColumn).apply { builder.setTimestamp(inputColumn, this) }
+                            setColumnValue(inputColumn, reader::getTimestamp, builder::setTimestamp)
                         }
                         Types.JSON -> {
-                            reader.getJson(inputColumn).apply { builder.setJson(inputColumn, this) }
+                            setColumnValue(inputColumn, reader::getJson, builder::setJson)
                         }
                         else -> {
                             throw DataException("Unexpected type:" + inputColumn.type)
                         }
                     }
+                }
+            }
 
-                    // Overwrite the column if it's hash column.
-                    hashColumnMap[inputColumn.name]?.let { hashColumn ->
-                        val outputColumn = outputColumnMap[hashColumn.newName.or(inputColumn.name)]
-                        val hashedValue = generateHash(inputValue.toString(), hashColumn.algorithm.get())
-                        builder.setString(outputColumn, hashedValue)
-                    }
+            private fun <T> setColumnValue(
+                    inputColumn: Column,
+                    getter: (inputColumn: Column) -> T,
+                    setter: (inputColumn: Column, value: T) -> Unit
+            ) {
+                val inputValue = getter(inputColumn)
+
+                hashColumnMap[inputColumn.name]?.let { hashColumn ->
+                    // Write hashed value if it's hash column.
+                    val outputColumn = outputColumnMap[hashColumn.newName.or(inputColumn.name)]
+                    val hashedValue = generateHash(inputValue.toString(), hashColumn.algorithm.get())
+                    builder.setString(outputColumn, hashedValue)
+                } ?: run {
+                    // Write the original data
+                    setter(inputColumn, inputValue)
                 }
             }
 
