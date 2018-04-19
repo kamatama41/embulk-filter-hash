@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlinVersion = '1.1.1'
+    ext.kotlinVersion = '1.2.31'
     repositories {
         mavenCentral()
         jcenter()
@@ -22,21 +22,21 @@ repositories {
     maven { url 'http://kamatama41.github.com/maven-repository/repository' }
 }
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    testCompile "com.github.kamatama41:embulk-test-helpers:0.3.2"
+    testCompile "com.github.kamatama41:embulk-test-helpers:0.4.0"
 }
 
 embulk {
-    version = "0.8.18"
+    version = "0.9.7"
     category = "filter"
     name = "hash"
     authors = ["Shinichi Ishimura"]
     email = "shiketaudonko41@gmail.com"
-    description = "Embulk filter plugin to convert a input to hash."
+    description = "Embulk filter plugin to convert an input to a hash value."
     licenses = ["MIT"]
     homepage = "https://github.com/kamatama41/embulk-filter-hash"
 }
