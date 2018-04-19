@@ -66,12 +66,12 @@ class HashFilterPlugin : FilterPlugin {
             override fun add(page: Page) {
                 reader.setPage(page)
                 while (reader.nextRecord()) {
-                    setValue()
+                    setRowValue()
                     builder.addRecord()
                 }
             }
 
-            private fun setValue() {
+            private fun setRowValue() {
                 for (inputColumn in inputSchema.columns) {
                     if (reader.isNull(inputColumn)) {
                         builder.setNull(inputColumn)
