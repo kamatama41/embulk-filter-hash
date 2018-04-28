@@ -27,7 +27,7 @@ targetCompatibility = 1.8
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    testCompile "com.github.kamatama41:embulk-test-helpers:0.4.0"
+    testCompile "com.github.kamatama41:embulk-test-helpers:0.5.0"
 }
 
 embulk {

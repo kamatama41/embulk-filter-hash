@@ -1,9 +1,6 @@
-type: test
-data:
-- null,20
-parser:
-  type: csv
-  null_string: 'null'
-  columns:
-  - {name: username, type: string}
-  - {name: age, type: long}
+type: config
+columns:
+- {name: username, type: string}
+- {name: age, type: long}
+values:
+- - [null,20]
