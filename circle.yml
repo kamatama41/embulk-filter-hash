@@ -1,23 +1,41 @@
-machine:
-  java:
-    version: oraclejdk8
+version: 2
+jobs:
+  build:
+    docker:
+      - image: openjdk:8
+    steps:
+      - checkout
 
-dependencies:
-  pre:
-    - git config --global user.email "shiketaudonko41@gmail.com"
-    - git config --global user.name "kamatama41"
-  override:
-    - ./gradlew dependencies
+      - restore_cache:
+          key: v1-gradle-{{ checksum "build.gradle" }}
+          key: v1-gradle-
+      - run: ./gradlew checkstyle
+      - run: ./gradlew check --info
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+      - store_artifacts:
+          path: ~/junit
 
-test:
-  override:
-    - ./gradlew check --stacktrace
+      - save_cache:
+          paths:
+            - "~/.gradle"
+            - "~/.m2"
+          key: v1-gradle-{{ checksum "build.gradle" }}
 
-deployment:
-  release:
-    branch: release
-    commands:
-      - curl -f -u $RUBYGEMS_USER:$RUBYGEMS_PASSWORD https://rubygems.org/api/v1/api_key.yaml > ~/.gem/credentials; chmod 0600 ~/.gem/credentials
-      - git checkout master
-      - git reset --hard origin/master
-      - ./gradlew release -Prelease.useAutomaticVersion=true
+      - deploy:
+          name: Push Gem to RubyGems.org and bump up
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "release" ]; then
+              curl -f -u $RUBYGEMS_USER:$RUBYGEMS_PASSWORD https://rubygems.org/api/v1/api_key.yaml > ~/.gem/credentials; chmod 0600 ~/.gem/credentials
+              git config --global user.email "shiketaudonko41@gmail.com"
+              git config --global user.name "kamatama41"
+              git checkout master
+              git reset --hard origin/master
+              ./gradlew release -Prelease.useAutomaticVersion=true
+            fi
