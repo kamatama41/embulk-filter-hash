@@ -1,5 +1,6 @@
 package org.embulk.filter.hash
 
+import org.embulk.exec.PartialExecutionException
 import org.embulk.test.EmbulkPluginTest
 import org.junit.Test
 
@@ -9,14 +10,21 @@ import org.embulk.test.TestOutputPlugin.Matcher.assertSchema
 import org.embulk.test.record
 import org.embulk.test.registerPlugins
 import org.embulk.test.set
+import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.instanceOf
+import org.junit.Assert
+import org.junit.Assert.assertThat
+import org.junit.Assert.fail
 import org.junit.Before
+import java.security.NoSuchAlgorithmException
 
 class TestHashFilterPlugin : EmbulkPluginTest() {
     @Before fun setup() {
         builder.registerPlugins(HashFilterPlugin::class)
     }
 
-    @Test fun specifiedColumnIsHashedAndRenamed() {
+    @Test
+    fun specifiedColumnIsHashedAndRenamed() {
         val config = config().set(
                 "type" to "hash",
                 "columns" to listOf(config().set(
@@ -37,7 +45,8 @@ class TestHashFilterPlugin : EmbulkPluginTest() {
         )
     }
 
-    @Test fun allColumnTypesAreHashed() {
+    @Test
+    fun allColumnTypesAreHashed() {
         val config = config().set(
                 "type" to "hash",
                 "columns" to listOf(
@@ -71,7 +80,65 @@ class TestHashFilterPlugin : EmbulkPluginTest() {
         )
     }
 
-    @Test fun columnIsNull() {
+    @Test
+    fun specifiedColumnIsHashedByMac() {
+        val config = config().set(
+                "type" to "hash",
+                "columns" to listOf(config().set(
+                        "name" to "age",
+                        "algorithm" to "HmacSHA256",
+                        "secret_key" to "passw0rd",
+                        "new_name" to "hashed_age"
+                )))
+
+        runFilter(config, inConfigPath = "yaml/input_basic.yml")
+
+        assertSchema(
+                "username" to STRING,
+                "hashed_age" to STRING
+        )
+
+        assertRecords(
+                record("user1", "5f9959eac71ad30782ebf4d3c98d12a4c33eadee156a6c5d3881204030811989")
+        )
+    }
+
+    @Test
+    fun exceptionThrownWithInvalidAlgorithm() {
+        try {
+            val config = config().set(
+                    "type" to "hash",
+                    "columns" to listOf(config().set(
+                            "name" to "age",
+                            "algorithm" to "Foo"
+                    )))
+            runFilter(config, inConfigPath = "yaml/input_basic.yml")
+            fail("No exception")
+        } catch (e: PartialExecutionException) {
+            assertThat(e.cause, instanceOf(NoSuchAlgorithmException::class.java))
+            assertThat(e.cause?.message, `is`("Foo"))
+        }
+    }
+
+    @Test
+    fun exceptionThrownWithMacAndNoSecretKey() {
+        try {
+            val config = config().set(
+                    "type" to "hash",
+                    "columns" to listOf(config().set(
+                            "name" to "age",
+                            "algorithm" to "HmacSHA256"
+                    )))
+            runFilter(config, inConfigPath = "yaml/input_basic.yml")
+            fail("No exception")
+        } catch (e: PartialExecutionException) {
+            assertThat(e.cause, instanceOf(IllegalArgumentException::class.java))
+            assertThat(e.cause?.message, `is`("Secret key must not be null."))
+        }
+    }
+
+    @Test
+    fun columnIsNull() {
         val config = config().set(
                 "type" to "hash",
                 "columns" to listOf(
