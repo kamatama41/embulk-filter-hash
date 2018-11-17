@@ -1,11 +1,7 @@
 package org.embulk.filter.hash
 
 import com.google.common.base.Optional
-import org.embulk.config.Config
-import org.embulk.config.ConfigDefault
-import org.embulk.config.ConfigSource
-import org.embulk.config.Task
-import org.embulk.config.TaskSource
+import org.embulk.config.*
 import org.embulk.spi.Column
 import org.embulk.spi.DataException
 import org.embulk.spi.Exec
@@ -17,6 +13,9 @@ import org.embulk.spi.PageReader
 import org.embulk.spi.Schema
 import org.embulk.spi.type.Types
 import java.security.MessageDigest
+import java.util.Locale
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 class HashFilterPlugin : FilterPlugin {
     interface PluginTask : Task {
@@ -32,6 +31,10 @@ class HashFilterPlugin : FilterPlugin {
         @get:ConfigDefault("\"SHA-256\"")
         val algorithm: Optional<String>
 
+        @get:Config("secret_key")
+        @get:ConfigDefault("null")
+        val secretKey: Optional<String>
+
         @get:Config("new_name")
         @get:ConfigDefault("null")
         val newName: Optional<String>
@@ -45,6 +48,8 @@ class HashFilterPlugin : FilterPlugin {
         inputSchema.columns.forEach { column ->
             val hashColumn = hashColumnMap[column.name]
             if (hashColumn != null) {
+                // Check algorithm is valid
+                getAlgorithmType(hashColumn.algorithm.get()).validate(hashColumn)
                 builder.add(hashColumn.newName.or(column.name), Types.STRING)
             } else {
                 builder.add(column.name, column.type)
@@ -114,7 +119,7 @@ class HashFilterPlugin : FilterPlugin {
                 hashColumnMap[inputColumn.name]?.let { hashColumn ->
                     // Write hashed value if it's hash column.
                     val outputColumn = outputColumnMap[hashColumn.newName.or(inputColumn.name)]
-                    val hashedValue = generateHash(inputValue.toString(), hashColumn.algorithm.get())
+                    val hashedValue = generateHash(inputValue.toString(), hashColumn)
                     builder.setString(outputColumn, hashedValue)
                 } ?: run {
                     // Write the original data
@@ -122,10 +127,8 @@ class HashFilterPlugin : FilterPlugin {
                 }
             }
 
-            private fun generateHash(value: String, algorithm: String): String {
-                val md = MessageDigest.getInstance(algorithm)
-                md.update(value.toByteArray())
-                return md.digest().joinToString("") { "%02x".format(it) }
+            private fun generateHash(value: String, config: HashColumn): String {
+                return getAlgorithmType(config.algorithm.get()).generateHash(value, config)
             }
 
             override fun finish() {
@@ -144,5 +147,55 @@ class HashFilterPlugin : FilterPlugin {
 
     private fun convertColumnListToMap(columns: List<Column>?): Map<String, Column> {
         return columns!!.associate { Pair(it.name, it) }
+    }
+
+    private fun getAlgorithmType(algorithm: String): AlgorithmType {
+        return when {
+            MD_ALGORITHMS.contains(algorithm.toUpperCase(Locale.ENGLISH)) -> {
+                AlgorithmType.MESSAGE_DIGEST
+            }
+            MAC_ALGORITHMS.contains(algorithm.toUpperCase(Locale.ENGLISH)) -> {
+                AlgorithmType.MAC
+            }
+            else -> throw ConfigException("No such algorithm: $algorithm")
+        }
+    }
+
+    enum class AlgorithmType {
+        MESSAGE_DIGEST {
+            override fun validate(config: HashColumn) {}
+
+            override fun generateHash(value: String, config: HashColumn): String {
+                val algorithm = config.algorithm.get()
+                return MessageDigest.getInstance(algorithm).run {
+                    update(value.toByteArray())
+                    digest().joinToString("") { "%02x".format(it) }
+                }
+            }
+        },
+        MAC {
+            override fun validate(config: HashColumn) {
+                if (!config.secretKey.isPresent) {
+                    throw ConfigException("Secret key must not be null.")
+                }
+            }
+
+            override fun generateHash(value: String, config: HashColumn): String {
+                val secretKey = config.secretKey.get()
+                val algorithm = config.algorithm.get()
+                return Mac.getInstance(algorithm).run {
+                    init(SecretKeySpec(secretKey.toByteArray(), algorithm))
+                    doFinal(value.toByteArray()).joinToString("") { "%02x".format(it) }
+                }
+            }
+        };
+
+        abstract fun validate(config: HashColumn)
+        abstract fun generateHash(value: String, config: HashColumn): String
+    }
+
+    companion object {
+        val MD_ALGORITHMS = java.security.Security.getAlgorithms("MessageDigest") ?: emptySet<String>()
+        val MAC_ALGORITHMS = java.security.Security.getAlgorithms("Mac") ?: emptySet<String>()
     }
 }
