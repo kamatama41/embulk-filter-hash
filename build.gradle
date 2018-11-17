@@ -4,7 +4,7 @@ buildscript {
         maven { url 'http://kamatama41.github.com/maven-repository/repository' }
     }
     dependencies {
-        classpath "com.github.kamatama41:gradle-embulk-plugin:0.1.4"
+        classpath "com.github.kamatama41:gradle-embulk-plugin:0.3.0"
         classpath "net.researchgate:gradle-release:2.5.0"
     }
 }
