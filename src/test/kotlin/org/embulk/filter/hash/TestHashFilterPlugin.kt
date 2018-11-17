@@ -1,5 +1,6 @@
 package org.embulk.filter.hash
 
+import org.embulk.config.ConfigException
 import org.embulk.exec.PartialExecutionException
 import org.embulk.test.EmbulkPluginTest
 import org.junit.Test
@@ -12,11 +13,9 @@ import org.embulk.test.registerPlugins
 import org.embulk.test.set
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.instanceOf
-import org.junit.Assert
 import org.junit.Assert.assertThat
 import org.junit.Assert.fail
 import org.junit.Before
-import java.security.NoSuchAlgorithmException
 
 class TestHashFilterPlugin : EmbulkPluginTest() {
     @Before fun setup() {
@@ -115,8 +114,8 @@ class TestHashFilterPlugin : EmbulkPluginTest() {
             runFilter(config, inConfigPath = "yaml/input_basic.yml")
             fail("No exception")
         } catch (e: PartialExecutionException) {
-            assertThat(e.cause, instanceOf(NoSuchAlgorithmException::class.java))
-            assertThat(e.cause?.message, `is`("Foo"))
+            assertThat(e.cause, instanceOf(ConfigException::class.java))
+            assertThat(e.cause?.message, `is`("No such algorithm: Foo"))
         }
     }
 
@@ -132,7 +131,7 @@ class TestHashFilterPlugin : EmbulkPluginTest() {
             runFilter(config, inConfigPath = "yaml/input_basic.yml")
             fail("No exception")
         } catch (e: PartialExecutionException) {
-            assertThat(e.cause, instanceOf(IllegalArgumentException::class.java))
+            assertThat(e.cause, instanceOf(ConfigException::class.java))
             assertThat(e.cause?.message, `is`("Secret key must not be null."))
         }
     }

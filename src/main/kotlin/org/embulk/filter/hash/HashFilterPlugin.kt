@@ -1,11 +1,7 @@
 package org.embulk.filter.hash
 
 import com.google.common.base.Optional
-import org.embulk.config.Config
-import org.embulk.config.ConfigDefault
-import org.embulk.config.ConfigSource
-import org.embulk.config.Task
-import org.embulk.config.TaskSource
+import org.embulk.config.*
 import org.embulk.spi.Column
 import org.embulk.spi.DataException
 import org.embulk.spi.Exec
@@ -17,7 +13,6 @@ import org.embulk.spi.PageReader
 import org.embulk.spi.Schema
 import org.embulk.spi.type.Types
 import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
 import java.util.Locale
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
@@ -162,7 +157,7 @@ class HashFilterPlugin : FilterPlugin {
             MAC_ALGORITHMS.contains(algorithm.toUpperCase(Locale.ENGLISH)) -> {
                 AlgorithmType.MAC
             }
-            else -> throw NoSuchAlgorithmException(algorithm)
+            else -> throw ConfigException("No such algorithm: $algorithm")
         }
     }
 
@@ -180,7 +175,9 @@ class HashFilterPlugin : FilterPlugin {
         },
         MAC {
             override fun validate(config: HashColumn) {
-                require(config.secretKey.isPresent) { "Secret key must not be null." }
+                if (!config.secretKey.isPresent) {
+                    throw ConfigException("Secret key must not be null.")
+                }
             }
 
             override fun generateHash(value: String, config: HashColumn): String {
