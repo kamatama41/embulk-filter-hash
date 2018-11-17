@@ -12,8 +12,9 @@ Embulk filter plugin to convert an input to a hash value.
 
 - **columns**: Columns to hash (array, required)
   - **name**: Name of input column (string, required)
-  - **algorithm**: A hash algorithm. [See also](#hash_algorithm) (string, default:`"SHA-256"`)
-  - **new_name**: New column name if you want to rename (string, default: `null`)
+  - **algorithm**: Hash algorithm. [See also](#hash_algorithm) (string, default:`"SHA-256"`)
+  - **secret_key**: Secret key for HMAC hashing. (string, required when specifying HMAC algorithm)
+  - **new_name**: New column name if you want to rename the column (string, default: `null`)
 
 ## Example
 
@@ -23,20 +24,20 @@ filters:
     columns:
     - { name: username }
     - { name: email, algorithm: SHA-512, new_name: hashed_email }
+    - { name: phone_number, algorithm: HmacSHA256, secret_key: passw0rd }
 ```
 
 ## Hash Algorithm
 <a name ="hash_algorithm">
 
-This plugin uses [MessageDigest](https://docs.oracle.com/javase/7/docs/api/java/security/MessageDigest.html) for hashing.
-Every implementation of the Java platform supports the following MessageDigest algorithms:  
-- MD5
-- SHA-1
-- SHA-256
-
+You can choose either of [MessageDigest](https://docs.oracle.com/javase/8/docs/api/java/security/MessageDigest.html) algorithm or [HMAC](https://docs.oracle.com/javase/8/docs/api/javax/crypto/Mac.html) algorithm.
 If you want to know all algorithms that your platform supports, run the following snippet.
+
 ```java
 for (String algorithm : java.security.Security.getAlgorithms("MessageDigest")) {
+    System.out.println(algorithm);
+}
+for (String algorithm : java.security.Security.getAlgorithms("Mac")) {
     System.out.println(algorithm);
 }
 ```
