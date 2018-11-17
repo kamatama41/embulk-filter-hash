@@ -32,6 +32,7 @@ jobs:
           name: Push Gem to RubyGems.org and bump up
           command: |
             if [ "${CIRCLE_BRANCH}" == "release" ]; then
+              mkdir -p ~/.gem
               curl -f -u $RUBYGEMS_USER:$RUBYGEMS_PASSWORD https://rubygems.org/api/v1/api_key.yaml > ~/.gem/credentials; chmod 0600 ~/.gem/credentials
               git config --global user.email "shiketaudonko41@gmail.com"
               git config --global user.name "kamatama41"
