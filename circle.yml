@@ -3,6 +3,7 @@ jobs:
   build:
     docker:
       - image: openjdk:8
+    working_directory: ~/embulk-filter-hash
     steps:
       - checkout
 
