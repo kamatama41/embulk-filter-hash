@@ -7,8 +7,9 @@ jobs:
       - checkout
 
       - restore_cache:
-          key: v1-gradle-{{ checksum "build.gradle" }}
-          key: v1-gradle-
+          keys:
+           - v1-gradle-{{ checksum "build.gradle" }}
+           - v1-gradle-
       - run: ./gradlew checkstyle
       - run: ./gradlew check --info
       - run:
