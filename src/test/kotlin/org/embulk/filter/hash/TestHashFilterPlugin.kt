@@ -3,25 +3,21 @@ package org.embulk.filter.hash
 import org.embulk.config.ConfigException
 import org.embulk.exec.PartialExecutionException
 import org.embulk.test.EmbulkPluginTest
-import org.junit.Test
 
 import org.embulk.spi.type.Types.STRING
+import org.embulk.test.EmbulkTest
 import org.embulk.test.TestOutputPlugin.Matcher.assertRecords
 import org.embulk.test.TestOutputPlugin.Matcher.assertSchema
 import org.embulk.test.record
-import org.embulk.test.registerPlugins
 import org.embulk.test.set
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.instanceOf
 import org.junit.Assert.assertThat
 import org.junit.Assert.fail
-import org.junit.Before
+import org.junit.jupiter.api.Test
 
+@EmbulkTest(value = [HashFilterPlugin::class])
 class TestHashFilterPlugin : EmbulkPluginTest() {
-    @Before fun setup() {
-        builder.registerPlugins(HashFilterPlugin::class)
-    }
-
     @Test
     fun specifiedColumnIsHashedAndRenamed() {
         val config = config().set(
